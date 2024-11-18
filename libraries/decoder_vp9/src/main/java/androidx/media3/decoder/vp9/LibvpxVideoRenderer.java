@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.media3.common.C;
 import androidx.media3.common.Format;
 import androidx.media3.common.MimeTypes;
+import androidx.media3.common.util.Log;
 import androidx.media3.common.util.TraceUtil;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.decoder.CryptoConfig;
@@ -161,6 +162,7 @@ public class LibvpxVideoRenderer extends DecoderVideoRenderer {
       throw new VpxDecoderException(
           "Failed to render output buffer to surface: decoder is not initialized.");
     }
+//    Log.e("Libvpx","buffer "+outputBuffer.format);
     decoder.renderToSurface(outputBuffer, surface);
     outputBuffer.release();
   }

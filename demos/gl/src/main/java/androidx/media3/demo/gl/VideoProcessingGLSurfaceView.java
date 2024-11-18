@@ -20,6 +20,7 @@ import android.graphics.SurfaceTexture;
 import android.media.MediaFormat;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.view.Surface;
@@ -264,6 +265,8 @@ public final class VideoProcessingGLSurfaceView extends GLSurfaceView {
 
     @Override
     public void onDrawFrame(GL10 gl) {
+      GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+      GLES30.glClearColor(1.0f, 0.4f, 0.2f, 0.0f);
       if (videoProcessor == null) {
         return;
       }

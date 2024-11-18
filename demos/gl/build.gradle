@@ -56,5 +56,6 @@ dependencies {
     implementation project(modulePrefix + 'lib-ui')
     implementation 'androidx.annotation:annotation:' + androidxAnnotationVersion
     implementation 'androidx.multidex:multidex:' + androidxMultidexVersion
+    implementation project(':lib-decoder-vp9')
     compileOnly 'org.checkerframework:checker-qual:' + checkerframeworkVersion
 }
