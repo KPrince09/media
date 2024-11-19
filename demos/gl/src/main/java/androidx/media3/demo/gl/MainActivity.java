@@ -29,8 +29,8 @@ import android.text.TextUtils;
 import android.view.Surface;
 import android.widget.FrameLayout;
 import android.widget.Toast;
-import androidx.annotation.Nullable;
 import androidx.media3.common.C;
+import androidx.media3.common.Format;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.Assertions;
@@ -40,32 +40,98 @@ import androidx.media3.common.util.Util;
 import androidx.media3.datasource.DataSource;
 import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.datasource.RawResourceDataSource;
 import androidx.media3.decoder.vp9.LibvpxVideoRenderer;
+import androidx.media3.exoplayer.DecoderCounters;
+import androidx.media3.exoplayer.DecoderReuseEvaluation;
+import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.Renderer;
 import androidx.media3.exoplayer.RenderersFactory;
+import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer;
 import androidx.media3.exoplayer.dash.DashMediaSource;
 import androidx.media3.exoplayer.drm.DefaultDrmSessionManager;
 import androidx.media3.exoplayer.drm.DrmSessionManager;
 import androidx.media3.exoplayer.drm.FrameworkMediaDrm;
 import androidx.media3.exoplayer.drm.HttpMediaDrmCallback;
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.ProgressiveMediaSource;
 import androidx.media3.exoplayer.util.EventLogger;
+import androidx.media3.exoplayer.video.VideoRendererEventListener;
 import androidx.media3.ui.PlayerView;
 import java.util.UUID;
+import org.jetbrains.annotations.Nullable;
 
 
 public class MainActivity extends Activity {
 
   private MainGLSurfaceView mainGLSurfaceView;
+  private PlayerView playerView;
+  private ExoPlayer player;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    // Initialize the custom GLSurfaceView
     mainGLSurfaceView = new MainGLSurfaceView(this);
-    setContentView(mainGLSurfaceView);
+
+    // Set the content view from the layout resource
+    setContentView(R.layout.main_activity);
+
+    androidx.media3.exoplayer.Renderer[] renderers = new androidx.media3.exoplayer.Renderer[] {
+        new LibvpxVideoRenderer(
+            /* allowedJoiningTimeMs= */ 5000,
+            /* eventHandler= */ new Handler(Looper.getMainLooper()),
+            /* eventListener= */ new VideoRendererEventListener() {
+          @Override
+          public void onVideoEnabled(DecoderCounters counters) {
+            Log.d("TAG", "Video enabled");
+          }
+
+          @Override
+          public void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
+            Log.d("TAG", "Decoder initialized: " + decoderName);
+          }
+
+          @Override
+          public void onVideoInputFormatChanged(
+              Format format, @Nullable DecoderReuseEvaluation decoderReuseEvaluation) {
+            Log.d("TAG", "Input format changed: " + format.bitrate);
+          }
+        },
+            /* maxDroppedFramesToNotify= */ 50
+        ),
+        new MediaCodecAudioRenderer(this, MediaCodecSelector.DEFAULT)
+    };
+
+    // Build ExoPlayer with custom renderer
+    player = new ExoPlayer.Builder(this).setRenderersFactory((eventHandler, videoRendererEventListener,
+            audioRendererEventListener, textRendererOutput, metadataRendererOutput) -> renderers)
+        .build();
+
+    player.setRepeatMode(Player.REPEAT_MODE_ALL);
+    // Create a MediaItem from a raw resource
+    MediaItem mediaItem = MediaItem.fromUri(
+        RawResourceDataSource.buildRawResourceUri(R.raw.sample)
+    );
+
+
+    // Set the MediaItem to the player
+    player.setMediaItem(mediaItem);
+
+    // Find the PlayerView in the layout
+    playerView = findViewById(R.id.player_view);
+
+    // Attach the player to the PlayerView
+    playerView.setPlayer(player);
+
+    // Prepare and play the video
+    player.prepare();
+    player.play();
   }
+
 
 
 }

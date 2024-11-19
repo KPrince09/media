@@ -25,6 +25,7 @@ import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer;
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.source.ProgressiveMediaSource;
+import androidx.media3.exoplayer.video.VideoDecoderOutputBufferRenderer;
 import androidx.media3.exoplayer.video.VideoRendererEventListener;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -36,6 +37,8 @@ public class MainGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Re
     SurfaceTexture videoSurfaceTexture;
     VideoPlane videoPlane;
     LibvpxVideoRenderer libvpxVideoRenderer;
+    VideoDecoderOutputBufferRenderer videoDecoderOutputBufferRenderer;
+
     ExoPlayer player;
 
     public MainGLSurfaceView(Context context) {
@@ -122,6 +125,7 @@ public class MainGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Re
         player = new ExoPlayer.Builder(context)
             .setRenderersFactory((eventHandler, videoRendererEventListener,
                 audioRendererEventListener, textRendererOutput, metadataRendererOutput) -> renderers)
+
             .build();
 
         player.setRepeatMode(Player.REPEAT_MODE_ALL);
